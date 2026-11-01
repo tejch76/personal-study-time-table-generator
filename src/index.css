@@ -5,48 +5,113 @@
 @layer base {
   html {
     scroll-behavior: smooth;
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  }
+
+  body {
+    @apply antialiased;
+  }
+
+  * {
+    @apply border-slate-200;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-soft;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm shadow-md shadow-blue-600/20 transition-all duration-200 hover:-translate-y-0.5;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-semibold text-sm transition-all duration-200;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all;
+  }
+
+  .stat-card {
+    @apply card p-5 flex flex-col gap-3;
+  }
+
+  .page-header {
+    @apply flex items-center justify-between mb-8;
+  }
+
+  .section-title {
+    @apply text-2xl font-bold text-slate-900 dark:text-white tracking-tight;
+  }
+
+  .section-subtitle {
+    @apply text-sm text-slate-500 dark:text-slate-400 mt-1;
   }
 }
 
 /* Custom modern scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.35); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(100, 116, 139, 0.55); }
+.dark ::-webkit-scrollbar-thumb { background: rgba(51, 65, 85, 0.5); }
+.dark ::-webkit-scrollbar-thumb:hover { background: rgba(71, 85, 105, 0.7); }
+
+/* Smooth animations */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up { animation: fadeInUp 0.4s ease-out; }
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.animate-slide-in-left { animation: slideInLeft 0.3s ease-out; }
+
+/* Gradient text utility */
+.gradient-text {
+  @apply bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 bg-clip-text text-transparent;
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
+/* Glass morphism effect */
+.glass {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.72);
+}
+.dark .glass {
+  background: rgba(15, 23, 42, 0.80);
 }
 
-::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.4);
-  border-radius: 9999px;
+/* Hero gradient background */
+.hero-bg {
+  background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(37, 99, 235, 0.12) 0%, transparent 70%),
+              radial-gradient(ellipse 60% 50% at 80% 60%, rgba(99, 102, 241, 0.08) 0%, transparent 60%);
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.6);
+/* Sidebar active item glow */
+.nav-active {
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
-.dark ::-webkit-scrollbar-thumb {
-  background: rgba(51, 65, 85, 0.6);
+/* Progress bar animation */
+@keyframes progressFill {
+  from { width: 0%; }
 }
-
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: rgba(71, 85, 105, 0.8);
-}
+.animate-progress { animation: progressFill 0.8s ease-out; }
 
 /* Print Styles */
 @media print {
-  header, aside, button, nav {
-    display: none !important;
-  }
-  main {
-    padding: 0 !important;
-    max-width: 100% !important;
-  }
-  body {
-    background: #ffffff !important;
-    color: #000000 !important;
-  }
+  header, aside, button, nav { display: none !important; }
+  main { padding: 0 !important; max-width: 100% !important; }
+  body { background: #ffffff !important; color: #000000 !important; }
 }

@@ -1,15 +1,7 @@
 import React, { useState } from 'react'
 import {
-  Menu,
-  Bell,
-  Flame,
-  Timer,
-  Calendar,
-  Sparkles,
-  CheckCircle2,
-  AlertTriangle,
-  Clock,
-  X
+  Menu, Bell, Flame, Timer, AlertTriangle, Clock,
+  CheckCircle2, X, Search, GraduationCap
 } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import { useAuth } from '../../context/AuthContext'
@@ -18,145 +10,150 @@ interface NavbarProps {
   onToggleSidebar: () => void
 }
 
+const PAGE_TITLES: Record<string, { title: string; sub: string }> = {
+  dashboard:   { title: 'Dashboard',              sub: 'Your daily study overview' },
+  timetable:   { title: 'Timetable',              sub: 'AI-generated study schedule' },
+  subjects:    { title: 'Subjects',               sub: 'Manage syllabus & chapters' },
+  exams:       { title: 'Exams & Countdown',      sub: 'Track exam readiness' },
+  pomodoro:    { title: 'Pomodoro Timer',          sub: 'Deep focus sessions' },
+  syllabus:    { title: 'Revision Tracker',        sub: 'Spaced repetition schedule' },
+  analytics:   { title: 'Analytics',              sub: 'Productivity insights' },
+  'notes-tasks': { title: 'Notes & Tasks',        sub: 'Assignments & reminders' },
+  settings:    { title: 'Settings',               sub: 'Preferences & account' },
+}
+
 export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
   const {
-    activeTab,
-    setActiveTab,
-    notifications,
-    markNotificationAsRead,
-    clearAllNotifications,
-    todayFocusMinutes,
-    currentStreakDays
+    activeTab, setActiveTab, notifications,
+    markNotificationAsRead, clearAllNotifications,
+    todayFocusMinutes, currentStreakDays,
   } = useApp()
   const { profile } = useAuth()
   const [showNotifications, setShowNotifications] = useState(false)
 
   const unreadCount = notifications.filter(n => !n.isRead).length
+  const page = PAGE_TITLES[activeTab] ?? { title: 'SmartStudy AI', sub: '' }
 
-  const getPageTitle = () => {
-    switch (activeTab) {
-      case 'dashboard': return 'Student Dashboard'
-      case 'timetable': return 'Personal Timetable'
-      case 'subjects': return 'Subject & Syllabus Management'
-      case 'exams': return 'Examination Countdown'
-      case 'pomodoro': return 'Pomodoro Focus Timer'
-      case 'syllabus': return 'Spaced Revision Tracker'
-      case 'analytics': return 'Productivity & Analytics'
-      case 'notes-tasks': return 'Notes & Task Management'
-      case 'settings': return 'Preferences & Settings'
-      default: return 'SmartStudy AI'
-    }
-  }
+  const initials = profile.fullName
+    ? profile.fullName.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()
+    : 'ST'
 
   return (
-    <header className="sticky top-0 z-30 h-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 px-4 sm:px-8 flex items-center justify-between">
-      <div className="flex items-center gap-4">
+    <header className="sticky top-0 z-30 h-16 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800 px-4 sm:px-6 flex items-center justify-between gap-4 shrink-0">
+
+      {/* Left: hamburger + page title */}
+      <div className="flex items-center gap-3 min-w-0">
         <button
           onClick={onToggleSidebar}
-          className="p-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors lg:hidden"
+          className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors lg:hidden shrink-0"
           aria-label="Open sidebar"
         >
           <Menu className="w-5 h-5" />
         </button>
-        <div>
-          <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">
-            {getPageTitle()}
+        <div className="min-w-0">
+          <h1 className="text-base font-bold text-slate-900 dark:text-white truncate leading-tight">
+            {page.title}
           </h1>
-          <p className="text-xs text-slate-400 dark:text-slate-500 hidden sm:block">
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' })}
+          <p className="text-xs text-slate-400 dark:text-slate-500 truncate hidden sm:block">
+            {page.sub}
           </p>
         </div>
       </div>
 
-      <div className="flex items-center gap-2 sm:gap-4">
-        {/* Streak indicator badge */}
-        <div
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 font-semibold text-xs cursor-pointer shadow-sm"
-          title="Daily Study Streak"
-        >
-          <Flame className="w-4 h-4 fill-amber-500 text-amber-500 animate-bounce" />
-          <span>{currentStreakDays} Day Streak</span>
+      {/* Right: quick actions */}
+      <div className="flex items-center gap-2 shrink-0">
+
+        {/* Streak badge */}
+        <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-700 dark:text-amber-400 text-xs font-semibold">
+          <Flame className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+          {currentStreakDays} day streak
         </div>
 
-        {/* Quick Pomodoro Launcher Button */}
+        {/* Focus minutes */}
         <button
           onClick={() => setActiveTab('pomodoro')}
-          className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/60 text-xs font-semibold transition-all duration-200"
-          title="Launch Pomodoro Timer"
+          className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 text-blue-700 dark:text-blue-400 text-xs font-semibold hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
+          title="Pomodoro Timer"
         >
-          <Timer className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-          <span>{todayFocusMinutes}m Focus Today</span>
+          <Timer className="w-3.5 h-3.5" />
+          {todayFocusMinutes}m today
         </button>
 
-        {/* Notification Bell & Dropdown */}
+        {/* Notifications */}
         <div className="relative">
           <button
-            onClick={() => setShowNotifications(!showNotifications)}
-            className="p-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 relative transition-colors"
+            onClick={() => setShowNotifications(v => !v)}
+            className="relative p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             aria-label="Notifications"
           >
-            <Bell className="w-5 h-5" />
+            <Bell className="w-4.5 h-4.5 w-[18px] h-[18px]" />
             {unreadCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center animate-pulse">
+              <span className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center">
                 {unreadCount}
               </span>
             )}
           </button>
 
-          {/* Notifications Dropdown Panel */}
+          {/* Dropdown */}
           {showNotifications && (
-            <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 py-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-              <div className="px-4 pb-2 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 z-50 overflow-hidden animate-fade-in">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-sm text-slate-800 dark:text-slate-200">Notifications</span>
+                  <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">Notifications</span>
                   {unreadCount > 0 && (
-                    <span className="text-[10px] bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded-full font-bold">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300">
                       {unreadCount} new
                     </span>
                   )}
                 </div>
-                {notifications.length > 0 && (
+                <div className="flex items-center gap-2">
+                  {notifications.length > 0 && (
+                    <button
+                      onClick={clearAllNotifications}
+                      className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                    >Clear all</button>
+                  )}
                   <button
-                    onClick={clearAllNotifications}
-                    className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                    onClick={() => setShowNotifications(false)}
+                    className="p-1 rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                   >
-                    Clear all
+                    <X className="w-3.5 h-3.5" />
                   </button>
-                )}
+                </div>
               </div>
 
-              <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/60">
+              <div className="max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
                 {notifications.length === 0 ? (
-                  <div className="py-8 text-center text-slate-400 dark:text-slate-500 text-xs">
-                    No new notifications
+                  <div className="py-10 text-center">
+                    <Bell className="w-8 h-8 text-slate-200 dark:text-slate-700 mx-auto mb-2" />
+                    <p className="text-xs text-slate-400">No notifications yet</p>
                   </div>
                 ) : (
-                  notifications.map((notif) => (
+                  notifications.map(notif => (
                     <div
                       key={notif.id}
                       onClick={() => markNotificationAsRead(notif.id)}
-                      className={`p-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/40 cursor-pointer transition-colors ${
-                        !notif.isRead ? 'bg-indigo-50/40 dark:bg-indigo-950/20' : ''
+                      className={`px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors ${
+                        !notif.isRead ? 'bg-blue-50/40 dark:bg-blue-950/20' : ''
                       }`}
                     >
-                      <div className="flex items-start gap-2.5">
-                        <div className="mt-0.5">
+                      <div className="flex items-start gap-3">
+                        <div className="mt-0.5 shrink-0">
                           {notif.type === 'missed_session' ? (
                             <AlertTriangle className="w-4 h-4 text-amber-500" />
                           ) : notif.type === 'exam_alert' ? (
                             <Clock className="w-4 h-4 text-rose-500" />
                           ) : (
-                            <CheckCircle2 className="w-4 h-4 text-indigo-500" />
+                            <CheckCircle2 className="w-4 h-4 text-blue-500" />
                           )}
                         </div>
-                        <div className="flex-1">
-                          <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">
-                            {notif.title}
-                          </p>
-                          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
-                            {notif.message}
-                          </p>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">{notif.title}</p>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">{notif.message}</p>
                         </div>
+                        {!notif.isRead && (
+                          <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0 mt-1.5" />
+                        )}
                       </div>
                     </div>
                   ))
@@ -164,6 +161,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
               </div>
             </div>
           )}
+        </div>
+
+        {/* Avatar */}
+        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shadow-inner cursor-default ml-1">
+          {initials}
         </div>
       </div>
     </header>

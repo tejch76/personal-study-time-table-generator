@@ -9,36 +9,49 @@ export default {
     extend: {
       colors: {
         brand: {
-          50: '#f0f5ff',
-          100: '#e5edff',
-          200: '#cddbfe',
-          300: '#b4c6fc',
-          400: '#8da2fb',
-          500: '#6366f1', // Indigo primary
-          600: '#4f46e5',
-          700: '#4338ca',
-          800: '#3730a3',
-          900: '#312e81',
+          50:  '#eff6ff',
+          100: '#dbeafe',
+          200: '#bfdbfe',
+          300: '#93c5fd',
+          400: '#60a5fa',
+          500: '#3b82f6',
+          600: '#2563eb',
+          700: '#1d4ed8',
+          800: '#1e40af',
+          900: '#1e3a8a',
         },
-        accent: {
-          teal: '#0ea5e9',
-          emerald: '#10b981',
-          amber: '#f59e0b',
-          rose: '#f43f5e',
-          purple: '#8b5cf6',
-        }
       },
       fontFamily: {
-        sans: ['Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
+        sans: ['Inter', 'Plus Jakarta Sans', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
-        'soft': '0 4px 20px -2px rgba(99, 102, 241, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04)',
-        'soft-hover': '0 10px 25px -3px rgba(99, 102, 241, 0.15), 0 4px 10px -2px rgba(0, 0, 0, 0.04)',
-        'dark-soft': '0 4px 20px -2px rgba(0, 0, 0, 0.4)',
+        'soft': '0 1px 3px 0 rgba(0,0,0,0.06), 0 4px 16px -2px rgba(0,0,0,0.06)',
+        'soft-hover': '0 4px 20px -2px rgba(37, 99, 235, 0.14), 0 8px 24px -4px rgba(0,0,0,0.08)',
+        'card': '0 0 0 1px rgba(0,0,0,0.04), 0 2px 8px -1px rgba(0,0,0,0.06)',
+        'blue': '0 4px 14px 0 rgba(37, 99, 235, 0.35)',
+        'dark-soft': '0 4px 20px -2px rgba(0,0,0,0.4)',
+        'inner-soft': 'inset 0 2px 4px 0 rgba(0,0,0,0.04)',
       },
       animation: {
         'pulse-subtle': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-      }
+        'fade-in': 'fadeIn 0.3s ease-out',
+        'slide-up': 'slideUp 0.3s ease-out',
+        'bounce-soft': 'bounce 2s infinite',
+      },
+      keyframes: {
+        fadeIn: {
+          from: { opacity: '0', transform: 'translateY(8px)' },
+          to:   { opacity: '1', transform: 'translateY(0)' },
+        },
+        slideUp: {
+          from: { opacity: '0', transform: 'translateY(20px)' },
+          to:   { opacity: '1', transform: 'translateY(0)' },
+        },
+      },
+      borderRadius: {
+        '3xl': '1.5rem',
+        '4xl': '2rem',
+      },
     },
   },
   plugins: [],
