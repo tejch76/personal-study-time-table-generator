@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudyFlow – Personal Study Timetable Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     SIDEBAR
+══════════════════════════════════════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
+    <div class="logo-text">
+      <span class="logo-name">StudyFlow</span>
+      <span class="logo-tagline">Personal Timetable Generator</span>
+    </div>
+    <button class="sidebar-close-btn" id="sidebar-close-btn" aria-label="Close Sidebar"><i class="fas fa-xmark"></i></button>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="nav-item active" data-section="dashboard" href="#dashboard">
+      <i class="fas fa-house"></i><span>Dashboard</span>
+      <div class="nav-indicator"></div>
+    </a>
+    <a class="nav-item" data-section="subjects" href="#subjects">
+      <i class="fas fa-book-open"></i><span>Subjects</span>
+      <div class="nav-indicator"></div>
+    </a>
+    <a class="nav-item" data-section="timetable" href="#timetable">
+      <i class="fas fa-calendar-days"></i><span>Timetable</span>
+      <div class="nav-indicator"></div>
+    </a>
+    <a class="nav-item" data-section="timer" href="#timer">
+      <i class="fas fa-stopwatch"></i><span>Study Timer</span>
+      <div class="nav-indicator"></div>
+    </a>
+    <a class="nav-item" data-section="progress" href="#progress">
+      <i class="fas fa-chart-line"></i><span>Progress</span>
+      <div class="nav-indicator"></div>
+    </a>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <button class="theme-toggle-btn" id="theme-toggle-btn" type="button">
+      <i class="fas fa-moon" id="theme-icon"></i>
+      <span id="theme-label">Dark Mode</span>
+    </button>
+    <button class="reset-all-sidebar-btn" id="reset-all-btn" type="button">
+      <i class="fas fa-trash-can"></i>
+      <span>Reset All Data</span>
+    </button>
+  </div>
+</aside>
+
+<!-- Sidebar overlay (mobile) -->
+<div class="sidebar-overlay hidden" id="sidebar-overlay"></div>
+
+<!-- ══════════════════════════════════════════
+     MAIN WRAPPER
+══════════════════════════════════════════ -->
+<div class="main-wrapper" id="main-wrapper">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <button class="hamburger-btn" id="hamburger-btn" aria-label="Open Sidebar">
+      <i class="fas fa-bars"></i>
+    </button>
+    <div class="topbar-brand">
+      <i class="fas fa-graduation-cap"></i>
+      <span>StudyFlow</span>
+    </div>
+    <div class="topbar-right">
+      <div class="live-datetime" id="topbar-datetime">
+        <div class="live-time" id="live-time">00:00:00</div>
+        <div class="live-date" id="live-date"></div>
+      </div>
+      <button class="theme-toggle-icon" id="theme-toggle-icon" title="Toggle Theme" aria-label="Toggle Theme">
+        <i class="fas fa-moon" id="theme-icon-top"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- ═══════ PAGE 1: DASHBOARD ═══════ -->
+  <section class="page-section active-page" id="section-dashboard">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title" id="greeting-text">Good Morning! 👋</h1>
+        <p class="page-subtitle" id="greeting-sub">Ready to crush your study goals today?</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn-primary" id="dash-add-subject-btn" type="button">
+          <i class="fas fa-plus"></i> Add Subject
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card stat-purple">
+        <div class="stat-icon"><i class="fas fa-book"></i></div>
+        <div class="stat-info">
+          <div class="stat-value" id="stat-subjects">0</div>
+          <div class="stat-label">Total Subjects</div>
+        </div>
+      </div>
+      <div class="stat-card stat-blue">
+        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+        <div class="stat-info">
+          <div class="stat-value" id="stat-hours">0h</div>
+          <div class="stat-label">Daily Study Hours</div>
+        </div>
+      </div>
+      <div class="stat-card stat-green">
+        <div class="stat-icon"><i class="fas fa-circle-check"></i></div>
+        <div class="stat-info">
+          <div class="stat-value" id="stat-sessions">0</div>
+          <div class="stat-label">Sessions Completed</div>
+        </div>
+      </div>
+      <div class="stat-card stat-orange">
+        <div class="stat-icon"><i class="fas fa-flame"></i></div>
+        <div class="stat-info">
+          <div class="stat-value" id="stat-streak">0</div>
+          <div class="stat-label">Day Streak 🔥</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Daily Progress Bar -->
+    <div class="card progress-card">
+      <div class="card-header-row">
+        <h3><i class="fas fa-chart-simple"></i> Today's Study Progress</h3>
+        <span class="progress-pct" id="progress-pct">0%</span>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar" id="daily-progress-bar" style="width:0%"></div>
+      </div>
+      <div class="progress-meta">
+        <span id="progress-done">0 min done</span>
+        <span id="progress-total">of 0 min planned</span>
+      </div>
+    </div>
+
+    <!-- Dashboard Lower Row -->
+    <div class="dashboard-lower">
+      <!-- Upcoming Sessions Card -->
+      <div class="card">
+        <div class="card-header-row">
+          <h3><i class="fas fa-calendar-check"></i> Today's Timetable</h3>
+          <button class="btn-link" data-section="timetable" type="button">View All</button>
+        </div>
+        <div id="upcoming-sessions-list">
+          <div class="empty-mini">Generate a timetable to see sessions here</div>
+        </div>
+      </div>
+
+      <!-- Quick Actions Card -->
+      <div class="card">
+        <div class="card-header-row">
+          <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+        </div>
+        <div class="quick-actions-grid">
+          <button class="quick-action-btn" id="dash-quick-add-sub" type="button">
+            <i class="fas fa-plus-circle"></i>
+            <span>Add Subject</span>
+          </button>
+          <button class="quick-action-btn" data-section="timetable" type="button">
+            <i class="fas fa-wand-magic-sparkles"></i>
+            <span>Generate Timetable</span>
+          </button>
+          <button class="quick-action-btn" data-section="timer" type="button">
+            <i class="fas fa-play-circle"></i>
+            <span>Study Timer</span>
+          </button>
+          <button class="quick-action-btn" data-section="progress" type="button">
+            <i class="fas fa-chart-line"></i>
+            <span>Track Progress</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Motivational Quote Card -->
+    <div class="card quote-card">
+      <div class="quote-icon"><i class="fas fa-quote-left"></i></div>
+      <blockquote id="daily-quote"></blockquote>
+      <div class="quote-author" id="quote-author"></div>
+      <button class="btn-outline btn-sm" id="new-quote-btn" type="button"><i class="fas fa-rotate"></i> New Quote</button>
+    </div>
+  </section>
+
+  <!-- ═══════ PAGE 2: SUBJECTS ═══════ -->
+  <section class="page-section" id="section-subjects">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Manage Your Subjects</h1>
+        <p class="page-subtitle">Add unlimited subjects, customize your own timings, set duration, and organize your study load</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn-primary" id="add-subject-btn" type="button">
+          <i class="fas fa-plus"></i> Add Subject
+        </button>
+        <button class="btn-success" id="generate-from-subjects-btn" type="button">
+          <i class="fas fa-wand-magic-sparkles"></i> Generate Timetable
+        </button>
+      </div>
+    </div>
+
+    <!-- Search & Total Bar -->
+    <div class="subjects-list-header">
+      <h3><i class="fas fa-book-open"></i> Saved Subjects (<span id="subjects-count">0</span>)</h3>
+      <div class="subject-search-wrap">
+        <i class="fas fa-magnifying-glass"></i>
+        <input type="text" id="subject-search" placeholder="Search subjects by name…" autocomplete="off" />
+      </div>
+    </div>
+
+    <!-- Subjects Grid -->
+    <div class="subjects-grid" id="subjects-grid">
+      <div class="empty-state" id="subjects-empty">
+        <i class="fas fa-book-open"></i>
+        <h3>No subjects added yet</h3>
+        <p>Click the <strong>Add Subject</strong> button to add your first subject with customized timings and duration</p>
+        <button class="btn-primary" id="add-subject-empty-btn" type="button">
+          <i class="fas fa-plus"></i> Add Subject
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════ PAGE 3: TIMETABLE ═══════ -->
+  <section class="page-section" id="section-timetable">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Study Timetable</h1>
+        <p class="page-subtitle">Generated from your subjects and timings — automatically arranged with overlap prevention</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn-outline btn-danger-outline" id="reset-tt-btn" type="button"><i class="fas fa-rotate-left"></i> Clear Timetable</button>
+        <button class="btn-outline" id="print-btn" type="button"><i class="fas fa-print"></i> Print</button>
+        <button class="btn-primary" id="generate-btn" type="button"><i class="fas fa-wand-magic-sparkles"></i> Regenerate Timetable</button>
+      </div>
+    </div>
+
+    <!-- Timetable Error Notification -->
+    <div id="tt-error-msg" class="alert-error hidden"></div>
+
+    <!-- View Tabs -->
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="table" type="button"><i class="fas fa-table-list"></i> Table View</button>
+      <button class="tab-btn" data-tab="daily" type="button"><i class="fas fa-timeline"></i> Timeline View</button>
+    </div>
+
+    <!-- Timetable Display Container -->
+    <div id="timetable-display">
+      <div class="empty-state">
+        <i class="fas fa-calendar-xmark"></i>
+        <h3>No timetable generated yet</h3>
+        <p>Go to <strong>Subjects</strong>, add your subjects with timings, then click <strong>Generate Timetable</strong></p>
+        <button class="btn-primary" id="tt-goto-subjects-btn" type="button">
+          <i class="fas fa-book-open"></i> Go to Subjects
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════ PAGE 4: STUDY TIMER ═══════ -->
+  <section class="page-section" id="section-timer">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Study Timer</h1>
+        <p class="page-subtitle">Pomodoro focus timer with Start, Pause, Resume, Reset buttons and custom durations</p>
+      </div>
+    </div>
+
+    <div class="timer-layout">
+      <!-- Main Timer Card -->
+      <div class="card timer-card">
+        <!-- Mode Tabs -->
+        <div class="timer-modes">
+          <button class="timer-mode-btn active" data-mode="work" type="button">Focus</button>
+          <button class="timer-mode-btn" data-mode="shortBreak" type="button">Short Break</button>
+          <button class="timer-mode-btn" data-mode="longBreak" type="button">Long Break</button>
+        </div>
+
+        <!-- Subject Selector -->
+        <div class="timer-subject-wrap">
+          <label for="timer-subject-select"><i class="fas fa-book"></i> Subject:</label>
+          <select id="timer-subject-select">
+            <option value="">— Select a subject —</option>
+          </select>
+        </div>
+
+        <!-- Timer Circular Ring -->
+        <div class="timer-ring-wrap">
+          <svg class="timer-ring" viewBox="0 0 220 220">
+            <circle class="ring-bg" cx="110" cy="110" r="96"/>
+            <circle class="ring-progress" id="ring-progress" cx="110" cy="110" r="96"
+              stroke-dasharray="603" stroke-dashoffset="0"/>
+          </svg>
+          <div class="timer-center">
+            <div class="timer-display" id="timer-display">25:00</div>
+            <div class="timer-mode-label" id="timer-mode-label">Focus Time</div>
+          </div>
+        </div>
+
+        <!-- Timer Controls: Start / Pause / Resume / Reset -->
+        <div class="timer-controls">
+          <button class="timer-btn timer-btn-reset" id="timer-reset-btn" title="Reset Timer" type="button" aria-label="Reset Timer">
+            <i class="fas fa-rotate-left"></i>
+          </button>
+          <button class="timer-btn timer-btn-main" id="timer-start-btn" title="Start / Pause / Resume" type="button" aria-label="Start Timer">
+            <i class="fas fa-play" id="timer-play-icon"></i>
+          </button>
+          <button class="timer-btn timer-btn-skip" id="timer-skip-btn" title="Skip to Next Mode" type="button" aria-label="Skip Mode">
+            <i class="fas fa-forward-step"></i>
+          </button>
+        </div>
+
+        <!-- Session Dots -->
+        <div class="timer-sessions-wrap">
+          <p class="timer-sessions-label">Session <span id="timer-session-num">1</span> of 4</p>
+          <div class="session-dots" id="session-dots">
+            <div class="session-dot"></div>
+            <div class="session-dot"></div>
+            <div class="session-dot"></div>
+            <div class="session-dot"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timer Settings & Help -->
+      <div class="timer-right">
+        <!-- Today's Focus Stats -->
+        <div class="card">
+          <div class="card-header-row"><h3><i class="fas fa-trophy"></i> Today's Focus</h3></div>
+          <div class="timer-stats-grid">
+            <div class="timer-stat">
+              <div class="timer-stat-val" id="ts-sessions">0</div>
+              <div class="timer-stat-lbl">Sessions Completed</div>
+            </div>
+            <div class="timer-stat">
+              <div class="timer-stat-val" id="ts-minutes">0</div>
+              <div class="timer-stat-lbl">Minutes Studied</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom Durations Form -->
+        <div class="card">
+          <div class="card-header-row"><h3><i class="fas fa-sliders"></i> Custom Durations</h3></div>
+          <div class="form-group">
+            <label for="pomo-work">Study Duration (min)</label>
+            <input type="number" id="pomo-work" value="25" min="1" max="120" />
+          </div>
+          <div class="form-group">
+            <label for="pomo-short">Short Break (min)</label>
+            <input type="number" id="pomo-short" value="5" min="1" max="60" />
+          </div>
+          <div class="form-group">
+            <label for="pomo-long">Long Break (min)</label>
+            <input type="number" id="pomo-long" value="15" min="1" max="120" />
+          </div>
+          <button class="btn-primary btn-full" id="apply-pomo-btn" type="button">
+            <i class="fas fa-floppy-disk"></i> Apply Timer Settings
+          </button>
+        </div>
+
+        <!-- How It Works Card -->
+        <div class="card">
+          <div class="card-header-row"><h3><i class="fas fa-circle-question"></i> How To Use</h3></div>
+          <ul class="timer-how-list">
+            <li><i class="fas fa-circle-check"></i> Select a subject from your saved list</li>
+            <li><i class="fas fa-circle-check"></i> Click <strong>Play</strong> to start focusing</li>
+            <li><i class="fas fa-circle-check"></i> Pause and Resume at any time</li>
+            <li><i class="fas fa-circle-check"></i> Completed sessions automatically update your progress</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════ PAGE 5: PROGRESS ═══════ -->
+  <section class="page-section" id="section-progress">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Progress Tracker</h1>
+        <p class="page-subtitle">Track your completed study sessions, total study time, and subject-wise distribution</p>
+      </div>
+    </div>
+
+    <!-- Progress Stats -->
+    <div class="stats-grid">
+      <div class="stat-card stat-purple">
+        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+        <div class="stat-info">
+          <div class="stat-value" id="prog-total-time">0h</div>
+          <div class="stat-label">Total Study Time</div>
+        </div>
+      </div>
+      <div class="stat-card stat-blue">
+        <div class="stat-icon"><i class="fas fa-circle-check"></i></div>
+        <div class="stat-info">
+          <div class="stat-value" id="prog-total-sessions">0</div>
+          <div class="stat-label">Completed Sessions</div>
+        </div>
+      </div>
+      <div class="stat-card stat-green">
+        <div class="stat-icon"><i class="fas fa-flame"></i></div>
+        <div class="stat-info">
+          <div class="stat-value" id="prog-streak">0</div>
+          <div class="stat-label">Current Streak 🔥</div>
+        </div>
+      </div>
+      <div class="stat-card stat-orange">
+        <div class="stat-icon"><i class="fas fa-percent"></i></div>
+        <div class="stat-info">
+          <div class="stat-value" id="prog-rate">0%</div>
+          <div class="stat-label">Today's Completion</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Subject-wise Progress Card -->
+    <div class="card">
+      <div class="card-header-row">
+        <h3><i class="fas fa-chart-bar"></i> Subject-wise Study Time</h3>
+        <span class="text-muted-sm">Auto-updated from completed timer sessions</span>
+      </div>
+      <div id="subject-progress-list">
+        <div class="empty-mini">Complete study sessions using the timer to see subject progress here</div>
+      </div>
+    </div>
+
+    <!-- Completed Sessions History Card -->
+    <div class="card">
+      <div class="card-header-row">
+        <h3><i class="fas fa-history"></i> Completed Study Sessions</h3>
+        <select id="history-filter" class="filter-select-sm">
+          <option value="7">Last 7 Days</option>
+          <option value="14">Last 14 Days</option>
+          <option value="30">Last 30 Days</option>
+          <option value="all">All Time</option>
+        </select>
+      </div>
+      <div id="study-history-list">
+        <div class="empty-mini">No sessions recorded yet. Start studying with the timer!</div>
+      </div>
+    </div>
+
+    <!-- Activity Calendar -->
+    <div class="card">
+      <div class="card-header-row">
+        <h3><i class="fas fa-calendar-check"></i> Study Activity Calendar</h3>
+        <span class="badge-streak" id="calendar-streak">🔥 0 day streak</span>
+      </div>
+      <div id="streak-calendar" class="streak-calendar"></div>
+    </div>
+  </section>
+
+</div><!-- end .main-wrapper -->
+
+<!-- ══════════════════════════════════════════
+     MODALS
+══════════════════════════════════════════ -->
+
+<!-- ADD / EDIT SUBJECT MODAL POPUP -->
+<div class="modal-overlay hidden" id="subject-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="subject-modal-title"><i class="fas fa-book-open"></i> Add Subject</h2>
+      <button class="modal-close" data-close="subject-modal" type="button" aria-label="Close Modal"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="modal-sub-id" value="" />
+
+      <!-- Subject Name -->
+      <div class="form-group">
+        <label for="modal-sub-name"><i class="fas fa-book"></i> Subject Name <span class="req">*</span></label>
+        <input type="text" id="modal-sub-name" placeholder="e.g. Mathematics, Physics, English, History…" maxlength="50" autocomplete="off" />
+      </div>
+
+      <!-- Start Time & End Time -->
+      <div class="form-row-2">
+        <div class="form-group">
+          <label for="modal-sub-start"><i class="fas fa-hourglass-start"></i> Start Time <span class="req">*</span></label>
+          <input type="time" id="modal-sub-start" value="09:00" />
+        </div>
+        <div class="form-group">
+          <label for="modal-sub-end"><i class="fas fa-hourglass-end"></i> End Time <span class="req">*</span></label>
+          <input type="time" id="modal-sub-end" value="10:30" />
+        </div>
+      </div>
+
+      <!-- Duration & Priority -->
+      <div class="form-row-2">
+        <div class="form-group">
+          <label for="modal-sub-duration"><i class="fas fa-stopwatch"></i> Study Duration (min)</label>
+          <div class="input-suffix-wrap">
+            <input type="number" id="modal-sub-duration" value="90" min="5" max="480" step="5" />
+            <span class="input-suffix-label">mins</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="modal-sub-priority"><i class="fas fa-flag"></i> Priority</label>
+          <select id="modal-sub-priority">
+            <option value="High">High Priority</option>
+            <option value="Medium" selected>Medium Priority</option>
+            <option value="Low">Low Priority</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Break After & Color -->
+      <div class="form-row-2">
+        <div class="form-group">
+          <label for="modal-sub-break"><i class="fas fa-coffee"></i> Break After (min)</label>
+          <div class="input-suffix-wrap">
+            <input type="number" id="modal-sub-break" value="10" min="0" max="60" step="5" />
+            <span class="input-suffix-label">mins</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="modal-sub-color"><i class="fas fa-palette"></i> Subject Color</label>
+          <div class="color-picker-row">
+            <input type="color" id="modal-sub-color" value="#6c63ff" />
+            <span class="color-hex-preview" id="modal-sub-color-preview">#6c63ff</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error Message Banner -->
+      <div id="subject-modal-error" class="form-error-banner hidden"></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-outline" data-close="subject-modal">Cancel</button>
+      <button type="button" class="btn-primary" id="modal-save-subject-btn">
+        <i class="fas fa-floppy-disk"></i> <span id="modal-save-btn-text">Save Subject</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRMATION MODAL -->
+<div class="modal-overlay hidden" id="confirm-modal">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <h2><i class="fas fa-triangle-exclamation"></i> Confirm Action</h2>
+      <button class="modal-close" data-close="confirm-modal" type="button" aria-label="Close Modal"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <p id="confirm-message">Are you sure you want to proceed?</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-outline" data-close="confirm-modal">Cancel</button>
+      <button type="button" class="btn-danger" id="confirm-ok-btn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST NOTIFICATION CONTAINER -->
+<div class="toast-container" id="toast-container"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
