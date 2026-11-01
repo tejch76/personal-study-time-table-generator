@@ -10,6 +10,7 @@ interface AuthContextType {
   isDemoMode: boolean
   login: (email: string, pass: string) => Promise<{ success: boolean; error?: string }>
   register: (email: string, pass: string, fullName: string) => Promise<{ success: boolean; error?: string }>
+  demoLogin: () => Promise<void>
   logout: () => Promise<void>
   updateProfile: (updated: Partial<StudentProfile>) => void
   completeOnboarding: (data: Partial<StudentProfile>) => void
@@ -17,7 +18,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// Storage key for local auth session
 const AUTH_KEY = 'smartstudy_auth_v2'
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -31,12 +31,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const init = async () => {
       try {
         if (isSupabaseConfigured && supabase) {
-          // Supabase configured — check real session
           const { data: { session } } = await supabase.auth.getSession()
           if (session?.user) {
             setIsAuthenticated(true)
             const savedProfile = storage.getProfile()
-            if (savedProfile && savedProfile.id !== DEFAULT_PROFILE.id) {
+            if (savedProfile) {
               setProfile(savedProfile)
             }
           } else {
@@ -44,24 +43,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             localStorage.removeItem(AUTH_KEY)
           }
         } else {
-          // Demo / local mode — check localStorage session
+          // Local/Demo mode: check if authenticated
           const localAuth = localStorage.getItem(AUTH_KEY)
           if (localAuth === 'true') {
             const savedProfile = storage.getProfile()
-            if (savedProfile && savedProfile.fullName && savedProfile.fullName !== DEFAULT_PROFILE.fullName) {
+            if (savedProfile) {
               setProfile(savedProfile)
-              setIsAuthenticated(true)
             } else {
-              // Stale / invalid session — clear it and show landing
-              localStorage.removeItem(AUTH_KEY)
-              setIsAuthenticated(false)
+              setProfile(DEFAULT_PROFILE)
             }
+            setIsAuthenticated(true)
           } else {
             setIsAuthenticated(false)
           }
         }
       } catch (err) {
-        console.error('Auth init error:', err)
+        console.error('Auth initialization error:', err)
         setIsAuthenticated(false)
       } finally {
         setIsLoading(false)
@@ -70,7 +67,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     init()
 
-    // Listen for Supabase auth state changes
     if (isSupabaseConfigured && supabase) {
       const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
         setIsAuthenticated(!!session)
@@ -93,20 +89,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
 
-      // Restore profile from storage
+      // Check if there is an existing profile for this email
       const saved = storage.getProfile()
-      if (saved && saved.email === email) {
+      if (saved && saved.email?.toLowerCase() === email.toLowerCase()) {
         setProfile(saved)
       } else {
-        const fallback: StudentProfile = {
+        const newProfile: StudentProfile = {
           ...DEFAULT_PROFILE,
           id: `student-${Date.now()}`,
           email,
           fullName: email.split('@')[0],
-          isOnboarded: false,
+          isOnboarded: true, // Allow user into dashboard immediately
         }
-        storage.setProfile(fallback)
-        setProfile(fallback)
+        storage.setProfile(newProfile)
+        setProfile(newProfile)
       }
 
       localStorage.setItem(AUTH_KEY, 'true')
@@ -137,9 +133,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const newProfile: StudentProfile = {
         ...DEFAULT_PROFILE,
         id: `student-${Date.now()}`,
-        fullName,
+        fullName: fullName || email.split('@')[0],
         email,
-        isOnboarded: false,
+        isOnboarded: true,
       }
 
       storage.setProfile(newProfile)
@@ -154,12 +150,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
+  const demoLogin = async () => {
+    setIsLoading(true)
+    const demoProfile: StudentProfile = {
+      ...DEFAULT_PROFILE,
+      isOnboarded: true,
+    }
+    storage.setProfile(demoProfile)
+    setProfile(demoProfile)
+    localStorage.setItem(AUTH_KEY, 'true')
+    setIsAuthenticated(true)
+    setIsLoading(false)
+  }
+
   const logout = async () => {
     if (isSupabaseConfigured && supabase) {
       await supabase.auth.signOut()
     }
     localStorage.removeItem(AUTH_KEY)
-    storage.setProfile(DEFAULT_PROFILE)
     setProfile(DEFAULT_PROFILE)
     setIsAuthenticated(false)
   }
@@ -211,6 +219,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isDemoMode,
         login,
         register,
+        demoLogin,
         logout,
         updateProfile,
         completeOnboarding,

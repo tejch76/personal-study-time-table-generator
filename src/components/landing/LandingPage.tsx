@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { AuthModal } from '../auth/AuthModal'
 import { useApp } from '../../context/AppContext'
+import { useAuth } from '../../context/AuthContext'
 
 const FEATURES = [
   {
@@ -110,6 +111,7 @@ const COLOR_MAP: Record<string, { bg: string; icon: string; border: string }> = 
 
 export const LandingPage: React.FC = () => {
   const { isDarkMode, toggleTheme } = useApp()
+  const { demoLogin } = useAuth()
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const [authMode, setAuthMode] = useState<'login' | 'register'>('register')
   const [scrolled, setScrolled] = useState(false)
@@ -132,9 +134,9 @@ export const LandingPage: React.FC = () => {
           ? 'bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800 shadow-sm'
           : 'bg-transparent'
       }`}>
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shadow-blue text-white">
               <GraduationCap className="w-5 h-5" />
             </div>
@@ -158,16 +160,19 @@ export const LandingPage: React.FC = () => {
           <div className="flex items-center gap-2">
             <button onClick={toggleTheme}
               className="p-2 rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              aria-label="Toggle theme"
             >
               {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
             <button onClick={openLogin}
-              className="hidden sm:block px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-            >Sign In</button>
-            <button onClick={openRegister}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shadow-md shadow-blue-600/20 transition-all hover:-translate-y-0.5"
+              className="px-3 sm:px-4 py-2 rounded-lg text-sm font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             >
-              Get Started
+              Sign In
+            </button>
+            <button onClick={openRegister}
+              className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-md shadow-blue-600/20 transition-all hover:-translate-y-0.5"
+            >
+              <span>Get Started</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -175,43 +180,49 @@ export const LandingPage: React.FC = () => {
       </header>
 
       {/* ── Hero Section ── */}
-      <section className="relative pt-32 pb-20 hero-bg overflow-hidden">
+      <section className="relative pt-28 sm:pt-32 pb-16 sm:pb-20 hero-bg overflow-hidden">
         {/* Decorative blobs */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-gradient-to-b from-blue-100/60 dark:from-blue-950/30 to-transparent rounded-full blur-3xl pointer-events-none" />
         <div className="absolute top-20 right-0 w-96 h-96 bg-indigo-200/30 dark:bg-indigo-900/20 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-4xl mx-auto">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 text-xs font-semibold mb-8 animate-fade-in">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 text-xs font-semibold mb-6 sm:mb-8 animate-fade-in">
               <Sparkles className="w-3.5 h-3.5" />
               <span>Powered by Google Gemini AI · Free for Students</span>
             </div>
 
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.08] mb-6">
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.08] mb-6">
               Study Smarter,{' '}
               <span className="gradient-text">Not Harder</span>
             </h1>
 
-            <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed mb-10">
+            <p className="text-base sm:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed mb-8 sm:mb-10">
               SmartStudy AI transforms your subjects, chapters, and exam dates into a
               perfectly balanced daily study timetable — with spaced repetition,
               auto-rescheduling, and Pomodoro focus built in.
             </p>
 
             {/* CTAs */}
-            <div className="flex flex-wrap items-center justify-center gap-4 mb-12">
+            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mb-10">
               <button onClick={openRegister}
-                className="flex items-center gap-2 px-8 py-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-base shadow-xl shadow-blue-600/25 transition-all hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-blue-600/30"
+                className="flex items-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm sm:text-base shadow-xl shadow-blue-600/25 transition-all hover:-translate-y-0.5"
               >
                 <Play className="w-4 h-4 fill-white" />
-                Start Free — No Credit Card
+                Get Started Free
               </button>
-              <button onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
-                className="flex items-center gap-2 px-8 py-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-base hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-soft"
+              <button onClick={openLogin}
+                className="flex items-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-bold text-sm sm:text-base hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-soft"
               >
-                Explore Features
-                <ChevronRight className="w-4 h-4" />
+                Sign In to Account
+                <ArrowRight className="w-4 h-4" />
+              </button>
+              <button onClick={demoLogin}
+                className="flex items-center gap-2 px-5 sm:px-6 py-3.5 sm:py-4 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 font-bold text-sm sm:text-base hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-all shadow-sm"
+              >
+                <Sparkles className="w-4 h-4 text-amber-500" />
+                Instant Demo Mode
               </button>
             </div>
 
