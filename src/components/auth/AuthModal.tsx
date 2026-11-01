@@ -75,7 +75,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
 
   const handleDemoLogin = async () => {
     setIsSubmitting(true)
-    await login('alex.vance@university.edu', 'demo1234')
+    // Register a demo account (works in both Supabase and local storage mode)
+    const res = await register('demo@smartstudy.ai', 'demo123456', 'Demo Student')
+    if (!res.success) {
+      // Account may already exist — try login instead
+      await login('demo@smartstudy.ai', 'demo123456')
+    }
     setIsSubmitting(false)
     onClose()
   }

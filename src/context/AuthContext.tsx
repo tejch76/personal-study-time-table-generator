@@ -17,103 +17,116 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+// Storage key for local auth session
+const AUTH_KEY = 'smartstudy_auth_v2'
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [profile, setProfile] = useState<StudentProfile>(() => storage.getProfile())
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return localStorage.getItem('smartstudy_auth') === 'true'
-  })
+  const [profile, setProfile] = useState<StudentProfile>(DEFAULT_PROFILE)
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const isDemoMode = !isSupabaseConfigured
 
+  // On mount — resolve auth state
   useEffect(() => {
-    const sb = supabase
-    if (isSupabaseConfigured && sb) {
-      sb.auth.getSession().then(({ data: { session } }) => {
-        if (session?.user) {
-          setIsAuthenticated(true)
-          // Fetch profile from supabase
-          sb
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single()
-            .then(({ data }) => {
-              if (data) {
-                setProfile({
-                  id: data.id,
-                  fullName: data.full_name || session.user.email?.split('@')[0] || 'Student',
-                  email: data.email || session.user.email || '',
-                  college: data.college || '',
-                  degree: data.degree || '',
-                  department: data.department || '',
-                  semester: data.semester || '',
-                  targetCgpa: data.target_cgpa || 9.0,
-                  dailyStudyHours: data.daily_study_hours || 4.0,
-                  preferredStartTime: data.preferred_start_time || '09:00',
-                  preferredEndTime: data.preferred_end_time || '22:00',
-                  sleepStartTime: data.sleep_start_time || '23:00',
-                  sleepEndTime: data.sleep_end_time || '07:00',
-                  sessionDuration: data.session_duration || 50,
-                  breakDuration: data.break_duration || 10,
-                  weeklyHolidays: data.weekly_holidays || ['Sunday'],
-                  timezone: data.timezone || 'UTC',
-                  isOnboarded: true,
-                  createdAt: data.created_at,
-                  updatedAt: data.updated_at,
-                })
-              }
-            })
+    const init = async () => {
+      try {
+        if (isSupabaseConfigured && supabase) {
+          // Supabase configured — check real session
+          const { data: { session } } = await supabase.auth.getSession()
+          if (session?.user) {
+            setIsAuthenticated(true)
+            const savedProfile = storage.getProfile()
+            if (savedProfile && savedProfile.id !== DEFAULT_PROFILE.id) {
+              setProfile(savedProfile)
+            }
+          } else {
+            setIsAuthenticated(false)
+            localStorage.removeItem(AUTH_KEY)
+          }
+        } else {
+          // Demo / local mode — check localStorage session
+          const localAuth = localStorage.getItem(AUTH_KEY)
+          if (localAuth === 'true') {
+            const savedProfile = storage.getProfile()
+            if (savedProfile && savedProfile.fullName && savedProfile.fullName !== DEFAULT_PROFILE.fullName) {
+              setProfile(savedProfile)
+              setIsAuthenticated(true)
+            } else {
+              // Stale / invalid session — clear it and show landing
+              localStorage.removeItem(AUTH_KEY)
+              setIsAuthenticated(false)
+            }
+          } else {
+            setIsAuthenticated(false)
+          }
         }
+      } catch (err) {
+        console.error('Auth init error:', err)
+        setIsAuthenticated(false)
+      } finally {
         setIsLoading(false)
-      })
+      }
+    }
 
-      const { data: authListener } = sb.auth.onAuthStateChange((_event, session) => {
+    init()
+
+    // Listen for Supabase auth state changes
+    if (isSupabaseConfigured && supabase) {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
         setIsAuthenticated(!!session)
         if (!session) {
-          localStorage.removeItem('smartstudy_auth')
+          localStorage.removeItem(AUTH_KEY)
         }
       })
-
-      return () => {
-        authListener.subscription.unsubscribe()
-      }
-    } else {
-      setIsLoading(false)
+      return () => subscription.unsubscribe()
     }
-  }, [isDemoMode])
+  }, [])
 
   const login = async (email: string, pass: string): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true)
     try {
-      const sb = supabase
-      if (isSupabaseConfigured && sb) {
-        const { error } = await sb.auth.signInWithPassword({ email, password: pass })
+      if (isSupabaseConfigured && supabase) {
+        const { error } = await supabase.auth.signInWithPassword({ email, password: pass })
         if (error) {
           setIsLoading(false)
           return { success: false, error: error.message }
         }
       }
-      
-      // Resilient local session
-      localStorage.setItem('smartstudy_auth', 'true')
+
+      // Restore profile from storage
+      const saved = storage.getProfile()
+      if (saved && saved.email === email) {
+        setProfile(saved)
+      } else {
+        const fallback: StudentProfile = {
+          ...DEFAULT_PROFILE,
+          id: `student-${Date.now()}`,
+          email,
+          fullName: email.split('@')[0],
+          isOnboarded: false,
+        }
+        storage.setProfile(fallback)
+        setProfile(fallback)
+      }
+
+      localStorage.setItem(AUTH_KEY, 'true')
       setIsAuthenticated(true)
       setIsLoading(false)
       return { success: true }
     } catch (err: any) {
       setIsLoading(false)
-      return { success: false, error: err.message || 'Login failed' }
+      return { success: false, error: err?.message || 'Login failed. Please try again.' }
     }
   }
 
   const register = async (email: string, pass: string, fullName: string): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true)
     try {
-      const sb = supabase
-      if (isSupabaseConfigured && sb) {
-        const { error } = await sb.auth.signUp({
+      if (isSupabaseConfigured && supabase) {
+        const { error } = await supabase.auth.signUp({
           email,
           password: pass,
-          options: { data: { full_name: fullName } }
+          options: { data: { full_name: fullName } },
         })
         if (error) {
           setIsLoading(false)
@@ -126,27 +139,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         id: `student-${Date.now()}`,
         fullName,
         email,
-        isOnboarded: false, // Must complete onboarding wizard
+        isOnboarded: false,
       }
 
       storage.setProfile(newProfile)
       setProfile(newProfile)
-      localStorage.setItem('smartstudy_auth', 'true')
+      localStorage.setItem(AUTH_KEY, 'true')
       setIsAuthenticated(true)
       setIsLoading(false)
       return { success: true }
     } catch (err: any) {
       setIsLoading(false)
-      return { success: false, error: err.message || 'Registration failed' }
+      return { success: false, error: err?.message || 'Registration failed. Please try again.' }
     }
   }
 
   const logout = async () => {
-    const sb = supabase
-    if (isSupabaseConfigured && sb) {
-      await sb.auth.signOut()
+    if (isSupabaseConfigured && supabase) {
+      await supabase.auth.signOut()
     }
-    localStorage.removeItem('smartstudy_auth')
+    localStorage.removeItem(AUTH_KEY)
+    storage.setProfile(DEFAULT_PROFILE)
+    setProfile(DEFAULT_PROFILE)
     setIsAuthenticated(false)
   }
 
@@ -155,9 +169,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setProfile(next)
     storage.setProfile(next)
 
-    const sb = supabase
-    if (isSupabaseConfigured && sb && profile.id) {
-      sb.from('profiles').upsert({
+    if (isSupabaseConfigured && supabase && profile.id) {
+      supabase.from('profiles').upsert({
         id: profile.id,
         full_name: next.fullName,
         college: next.college,
@@ -179,14 +192,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   const completeOnboarding = (data: Partial<StudentProfile>) => {
-    const onboardedProfile = {
+    const onboarded = {
       ...profile,
       ...data,
       isOnboarded: true,
       updatedAt: new Date().toISOString(),
     }
-    setProfile(onboardedProfile)
-    storage.setProfile(onboardedProfile)
+    setProfile(onboarded)
+    storage.setProfile(onboarded)
   }
 
   return (
@@ -209,7 +222,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 }
 
 export const useAuth = () => {
-  const context = useContext(AuthContext)
-  if (!context) throw new Error('useAuth must be used within AuthProvider')
-  return context
+  const ctx = useContext(AuthContext)
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider')
+  return ctx
 }

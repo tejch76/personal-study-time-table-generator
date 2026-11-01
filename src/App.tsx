@@ -13,61 +13,62 @@ import { SyllabusTracker } from './components/syllabus/SyllabusTracker'
 import { AnalyticsPage } from './components/analytics/AnalyticsPage'
 import { NotesAndTasks } from './components/notes/NotesAndTasks'
 import { SettingsPage } from './components/settings/SettingsPage'
+import { GraduationCap } from 'lucide-react'
+
+// Full-screen loading spinner shown while auth resolves
+const LoadingScreen: React.FC = () => (
+  <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center gap-4">
+    <div className="relative">
+      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg">
+        <GraduationCap className="w-7 h-7 text-white" />
+      </div>
+      <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-blue-500 border-t-transparent animate-spin bg-transparent" />
+    </div>
+    <div className="text-center">
+      <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">SmartStudy AI</p>
+      <p className="text-xs text-slate-400 mt-0.5">Loading your workspace...</p>
+    </div>
+  </div>
+)
 
 export const AppContent: React.FC = () => {
   const { isAuthenticated, profile, isLoading } = useAuth()
   const { activeTab } = useApp()
 
+  // Show spinner while auth state is resolving
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-          <span className="text-xs font-semibold text-slate-500">Loading SmartStudy AI...</span>
-        </div>
-      </div>
-    )
+    return <LoadingScreen />
   }
 
-  // If not signed in, show high-converting Landing Page
+  // Not signed in → show landing page
   if (!isAuthenticated) {
     return <LandingPage />
   }
 
-  // If newly registered student, display onboarding wizard
+  // Signed in but onboarding not complete → wizard
   if (!profile.isOnboarded) {
     return <OnboardingWizard />
   }
 
-  // Render main student portal
-  const renderTabContent = () => {
+  // Main authenticated app
+  const renderTab = () => {
     switch (activeTab) {
-      case 'dashboard':
-        return <StudentDashboard />
-      case 'timetable':
-        return <TimetablePage />
-      case 'subjects':
-        return <SubjectManagement />
-      case 'exams':
-        return <ExamCountdown />
-      case 'pomodoro':
-        return <PomodoroTimer />
-      case 'syllabus':
-        return <SyllabusTracker />
-      case 'analytics':
-        return <AnalyticsPage />
-      case 'notes-tasks':
-        return <NotesAndTasks />
-      case 'settings':
-        return <SettingsPage />
-      default:
-        return <StudentDashboard />
+      case 'dashboard':   return <StudentDashboard />
+      case 'timetable':   return <TimetablePage />
+      case 'subjects':    return <SubjectManagement />
+      case 'exams':       return <ExamCountdown />
+      case 'pomodoro':    return <PomodoroTimer />
+      case 'syllabus':    return <SyllabusTracker />
+      case 'analytics':   return <AnalyticsPage />
+      case 'notes-tasks': return <NotesAndTasks />
+      case 'settings':    return <SettingsPage />
+      default:            return <StudentDashboard />
     }
   }
 
   return (
     <AppLayout>
-      {renderTabContent()}
+      {renderTab()}
     </AppLayout>
   )
 }
